@@ -102,8 +102,11 @@ boot_alloc(uint32_t n)
 	// to a multiple of PGSIZE.
 	//
 	// LAB 2: Your code here.
+	if(n > 0) {
+		nextfree = ROUNDUP(nextfree + n, PGSIZE);
+	}
 
-	return NULL;
+	return nextfree;
 }
 
 // Set up a two-level page table:
@@ -125,7 +128,7 @@ mem_init(void)
 	i386_detect_memory();
 
 	// Remove this line when you're ready to test this function.
-	panic("mem_init: This function is not finished\n");
+	// panic("mem_init: This function is not finished\n");
 
 	//////////////////////////////////////////////////////////////////////
 	// create initial page directory.
@@ -148,7 +151,8 @@ mem_init(void)
 	// array.  'npages' is the number of physical pages in memory.  Use memset
 	// to initialize all fields of each struct PageInfo to 0.
 	// Your code goes here:
-
+	pages = (struct PageInfo *) boot_alloc(sizeof(struct PageInfo) * npages);
+	memset(pages, 0, sizeof(struct PageInfo) * npages);
 
 	//////////////////////////////////////////////////////////////////////
 	// Now that we've allocated the initial kernel data structures, we set
@@ -257,6 +261,25 @@ page_init(void)
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
 	}
+
+	// never alloc page 0
+	pages[1].pp_link = 0;
+
+	// io hole & kernel mem never be alloced
+	// io hole 	[IOPHYSMEM, EXTPHYSMEM) 0x0A0000 ~ 0x100000
+	// kernel mem 	0x100000 ~ PADDR((char *)(pages + npages) -1)
+
+	// find invalid pages
+	physaddr_t invalid_pa_begin = IOPHYSMEM;
+	physaddr_t invalid_pa_end = PADDR((char *)(pages + npages) - 1); 
+
+	struct PageInfo * invalid_page_begin = pa2page(invalid_pa_begin);
+	struct PageInfo * invalid_page_end = pa2page(invalid_pa_end);
+
+	// skip invalid pages
+	invalid_page_begin --;
+	invalid_page_end ++;
+	invalid_page_end->pp_link = invalid_page_begin;
 }
 
 //
