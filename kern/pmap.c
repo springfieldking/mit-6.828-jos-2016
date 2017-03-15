@@ -443,9 +443,10 @@ int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
 	// Fill this function in
-	pte_t *ptep = pgdir_walk(pgdir, va, 1);
-	if(*ptep != 0) {
-		page_remove(pgdir, va);
+	pte_t *ptep;
+	struct PageInfo * oldpp = page_lookup(pgdir, va, &ptep);
+	if(oldpp != pp) {
+		page_remove(pgdir, oldpp);
 	}
 
 	physaddr_t pa = page2pa(pp);
@@ -470,12 +471,12 @@ struct PageInfo *
 page_lookup(pde_t *pgdir, void *va, pte_t **pte_store)
 {
 	// Fill this function in
-	pte_t *ptep = pgdir_walk(pgdir, va, 1);
-	if(*ptep != (pte_t)NULL) {
+	pte_t *ptep = pgdir_walk(pgdir, va, 0);
+	if(ptep != NULL && *ptep != (pte_t)NULL) {
 		if(pte_store != 0) {
 			*pte_store = ptep;
 		}
-		return pa2page(PADDR(ptep));	
+		return pa2page(PTE_ADDR(*ptep));
 	}
 	return NULL;
 }
