@@ -298,7 +298,6 @@ struct PageInfo *
 page_alloc(int alloc_flags)
 {
 	// Fill this function in
-	
 	struct PageInfo *pp = page_free_list;
 	if(pp == 0)
 		return 0;
@@ -380,11 +379,11 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 	if(pgdir[pdx] == 0) {
 		if(!create) 
 			return NULL;
-		struct PageInfo *pp = page_alloc(0);
+		struct PageInfo *pp = page_alloc(1);
 		if(pp == NULL)
 			return NULL;
 		pp->pp_ref++;
-		pgdir[pdx] = page2pa(pp);
+		pgdir[pdx] = page2pa(pp) | PTE_P | PTE_U;
 	}
 	pte_t * ptep = (pte_t *)KADDR(PTE_ADDR(kern_pgdir[pdx]));
 	pte_t ptx = PTX(va);
@@ -419,7 +418,7 @@ boot_map_region(pde_t *pgdir, uintptr_t va, size_t size, physaddr_t pa, int perm
 // The permissions (the low 12 bits) of the page table entry
 // should be set to 'perm|PTE_P'.
 //
-// Requirements
+// Requirement | PTE_Ps
 //   - If there is already a page mapped at 'va', it should be page_remove()d.
 //   - If necessary, on demand, a page table should be allocated and inserted
 //     into 'pgdir'.
@@ -443,16 +442,29 @@ int
 page_insert(pde_t *pgdir, struct PageInfo *pp, void *va, int perm)
 {
 	// Fill this function in
-	pte_t *ptep;
-	struct PageInfo * oldpp = page_lookup(pgdir, va, &ptep);
-	if(oldpp != pp) {
-		page_remove(pgdir, oldpp);
+	struct PageInfo * oldpp = page_lookup(pgdir, va, NULL);
+
+	// page has been mapped
+	if(oldpp != NULL) {
+		if(oldpp != pp) {
+			// different page, remove
+			page_remove(pgdir, va);
+		} else {
+			// same page, update P_
+			pte_t *ptep = pgdir_walk(pgdir, va, 1);
+			*ptep = page2pa(pp) | perm | PTE_P;
+			return 0;
+		}
 	}
 
+	// oldpp == null, never mapped
+	pte_t *ptep = pgdir_walk(pgdir, va, 1);
+	if(ptep == NULL)
+		return -E_NO_MEM;
 	physaddr_t pa = page2pa(pp);
 	*ptep = pa | perm | PTE_P;
 	pp->pp_ref++;
-	
+
 	return 0;
 }
 
