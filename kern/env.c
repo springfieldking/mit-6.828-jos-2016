@@ -123,7 +123,7 @@ env_init(void)
 		env->env_id = 0;
 		env->env_link = env_free_list;
 		env_free_list = env;
-	} 
+	}
 
 	// Per-CPU part of the initialization
 	env_init_percpu();
@@ -287,7 +287,7 @@ region_alloc(struct Env *e, void *va, size_t len)
 		if(pp == NULL) {
 			panic("page_alloc faild in region_alloc!\n!");
 		}
-		page_insert(e->env_pgdir, pp, (void*)va_tmp, PTE_U|PTE_W);	
+		page_insert(e->env_pgdir, pp, (void*)va_tmp, PTE_U|PTE_W);
 	}
 }
 
@@ -392,7 +392,7 @@ env_create(uint8_t *binary, enum EnvType type)
 		panic("env_alloc failed in env_create, ret = %d\n", ret);
 	}
 
-	// set type 	
+	// set type
 	env->env_type = type;
 	// load elf
 	load_icode(env, binary);
@@ -516,7 +516,7 @@ env_run(struct Env *e)
 	// panic("env_run not yet implemented");
 	if(curenv != NULL) {
 		if(curenv->env_status == ENV_RUNNING)
-			curenv->env_status = ENV_RUNNABLE;		
+			curenv->env_status = ENV_RUNNABLE;
 	}
 	curenv = e;
 	curenv->env_status = ENV_RUNNING;
