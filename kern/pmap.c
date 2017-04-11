@@ -403,7 +403,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 		pp->pp_ref++;
 		pgdir[pdx] = page2pa(pp) | PTE_P | PTE_U | PTE_W;
 	}
-	pte_t * ptep = (pte_t *)KADDR(PTE_ADDR(kern_pgdir[pdx]));
+	pte_t * ptep = (pte_t *)KADDR(PTE_ADDR(pgdir[pdx]));
 	pte_t ptx = PTX(va);
 	return &ptep[ptx];
 }
