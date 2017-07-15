@@ -394,7 +394,7 @@ pgdir_walk(pde_t *pgdir, const void *va, int create)
 	// Fill this function in
 	// init pg dir entry
 	pde_t pdx = PDX(va);
-	if(pgdir[pdx] == 0) {
+	if(!(pgdir[pdx] & PTE_P)) {
 		if(!create) 
 			return NULL;
 		struct PageInfo *pp = page_alloc(1);
