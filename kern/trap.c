@@ -80,6 +80,7 @@ trap_init(void)
 	void th13();
 	void th14();
 	void th16();
+	void th48();
 	SETGATE(idt[0], 0, GD_KT, th0, 0);
 	SETGATE(idt[1], 0, GD_KT, th1, 0);
 	SETGATE(idt[3], 0, GD_KT, th3, 3);
@@ -95,6 +96,7 @@ trap_init(void)
 	SETGATE(idt[13], 0, GD_KT, th13, 0);
 	SETGATE(idt[14], 0, GD_KT, th14, 0);
 	SETGATE(idt[16], 0, GD_KT, th16, 0);
+	SETGATE(idt[48], 0, GD_KT, th48, 3);
 
 
 	// Per-CPU setup 
