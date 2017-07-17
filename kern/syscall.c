@@ -11,6 +11,8 @@
 #include <kern/syscall.h>
 #include <kern/console.h>
 
+static envid_t sys_getenvid();
+
 // Print a string to the system console.
 // The string is exactly 'len' characters long.
 // Destroys the environment on memory errors.
@@ -21,7 +23,9 @@ sys_cputs(const char *s, size_t len)
 	// Destroy the environment if not.
 
 	// LAB 3: Your code here.
-
+	struct Env *e;
+	envid2env(sys_getenvid(), &e, 1);
+	user_mem_assert(e, s, len, PTE_U);
 	// Print the string supplied by the user.
 	cprintf("%.*s", len, s);
 }
