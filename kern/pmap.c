@@ -309,6 +309,7 @@ page_init(void)
 	// free pages!
 	size_t i;
 	for (i = 0; i < npages; i++) {
+		if (i == PGNUM(MPENTRY_PADDR)) continue;
 		pages[i].pp_ref = 0;
 		pages[i].pp_link = page_free_list;
 		page_free_list = &pages[i];
@@ -618,7 +619,12 @@ mmio_map_region(physaddr_t pa, size_t size)
 	// Hint: The staff solution uses boot_map_region.
 	//
 	// Your code here:
-	panic("mmio_map_region not implemented");
+	size_t pa_start = ROUNDDOWN(pa, PGSIZE);
+	size_t pa_end = ROUNDUP(pa + size, PGSIZE);
+	size_t real_size = pa_end - pa_start;
+	boot_map_region(kern_pgdir, base, real_size, pa_start, PTE_PCD|PTE_PWT|PTE_W);
+	cprintf("[debug] mmoi pa = %08x", pa);
+	return (void *)(base - real_size);
 }
 
 static uintptr_t user_mem_check_addr;
