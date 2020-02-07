@@ -268,7 +268,11 @@ mem_init_mp(void)
 	//     Permissions: kernel RW, user NONE
 	//
 	// LAB 4: Your code here:
-
+	for(int i = 0; i < NCPU; i ++) {
+		int kstack_start = KSTACKTOP - KSTKSIZE - i * (KSTKSIZE + KSTKGAP);
+		boot_map_region(kern_pgdir, kstack_start, KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_W);
+	}
+	cprintf("[debug] percpu_kstacks addr = %08x\n", percpu_kstacks);
 }
 
 // --------------------------------------------------------------
@@ -619,12 +623,17 @@ mmio_map_region(physaddr_t pa, size_t size)
 	// Hint: The staff solution uses boot_map_region.
 	//
 	// Your code here:
-	size_t pa_start = ROUNDDOWN(pa, PGSIZE);
-	size_t pa_end = ROUNDUP(pa + size, PGSIZE);
-	size_t real_size = pa_end - pa_start;
-	boot_map_region(kern_pgdir, base, real_size, pa_start, PTE_PCD|PTE_PWT|PTE_W);
-	cprintf("[debug] mmoi pa = %08x", pa);
-	return (void *)(base - real_size);
+    size_t begin = ROUNDDOWN(pa, PGSIZE), end = ROUNDUP(pa + size, PGSIZE);
+    size_t map_size = end - begin;
+    if (base + map_size >= MMIOLIM) {
+        panic("overflow MMIOLIM");
+    }    
+    boot_map_region(kern_pgdir, base, map_size, pa, PTE_PCD|PTE_PWT|PTE_W);
+    uintptr_t result = base;
+    base += map_size;
+
+	cprintf("[debug] mmoi pa = %08x\n", pa);
+    return (void *)result;
 }
 
 static uintptr_t user_mem_check_addr;
