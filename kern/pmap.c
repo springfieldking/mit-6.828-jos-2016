@@ -272,7 +272,7 @@ mem_init_mp(void)
 		int kstack_start = KSTACKTOP - KSTKSIZE - i * (KSTKSIZE + KSTKGAP);
 		boot_map_region(kern_pgdir, kstack_start, KSTKSIZE, PADDR(percpu_kstacks[i]), PTE_W);
 	}
-	cprintf("[debug] percpu_kstacks addr = %08x\n", percpu_kstacks);
+	// cprintf("[debug] percpu_kstacks addr = %08x\n", percpu_kstacks);
 }
 
 // --------------------------------------------------------------
@@ -632,7 +632,7 @@ mmio_map_region(physaddr_t pa, size_t size)
     uintptr_t result = base;
     base += map_size;
 
-	cprintf("[debug] mmoi pa = %08x\n", pa);
+	// cprintf("[debug] mmoi pa = %08x\n", pa);
     return (void *)result;
 }
 

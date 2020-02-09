@@ -90,7 +90,7 @@ sys_exofork(void)
 	// LAB 4: Your code here.
 	// panic("sys_exofork not implemented");
 	struct Env *e = NULL;
-	int ret = env_alloc(&e, 0);
+	int ret = env_alloc(&e, curenv->env_id);
 	if(ret < 0 )
 		return ret;
 	
@@ -191,10 +191,10 @@ sys_page_alloc(envid_t envid, void *va, int perm)
 	if((perm & perm_check) != perm_check)
 		return -E_INVAL;
 
-	if((uint32_t)va >= UTOP || ((uint32_t)va / PGSIZE) != 0)
+	if((uint32_t)va >= UTOP)
 		return -E_INVAL;
 
-	struct PageInfo *p = page_alloc(0);
+	struct PageInfo *p = page_alloc(ALLOC_ZERO);
 	if(p == NULL)
 		return -E_NO_MEM;
 
@@ -237,16 +237,18 @@ sys_page_map(envid_t srcenvid, void *srcva,
 		return -E_BAD_ENV;
 
 	int perm_check = PTE_U | PTE_P;
-	if((perm & perm_check) != perm_check || (perm & PTE_W) != 0)
+	if((perm & perm_check) != perm_check)// || (perm & PTE_W) != 0)
 		return -E_INVAL;
 
-	if((uint32_t)srcva >= UTOP || ((uint32_t)srcva / PGSIZE) != 0 || 
-		(uint32_t)dstva >= UTOP || ((uint32_t)dstva / PGSIZE) != 0)
+	if((uint32_t)srcva >= UTOP || (uint32_t)dstva >= UTOP || PGOFF(srcva) || PGOFF(dstva))
 		return -E_INVAL;
 
-	struct PageInfo *pi = page_lookup(srcEnv->env_pgdir, srcva, NULL);
+	pte_t *pte;
+	struct PageInfo *pi = page_lookup(srcEnv->env_pgdir, srcva, &pte);
 	if(pi == NULL)
 		return -E_INVAL;
+
+	if ((perm & PTE_W) && !(*pte & PTE_W)) return -E_INVAL;
 
 	int ret = page_insert(dstEnv->env_pgdir, pi, dstva, perm);
 	return ret;
@@ -270,6 +272,9 @@ sys_page_unmap(envid_t envid, void *va)
 	int ret = envid2env(envid, &e, 1);
 	if(ret < 0 )
 		return ret;
+
+	if((uint32_t)va >= UTOP)
+		return -E_INVAL;
 
 	page_remove(e->env_pgdir, va);
 	return 0;
