@@ -73,7 +73,7 @@ _pgfault_upcall:
 	// Restore the trap-time registers.  After you do this, you
 	// can no longer modify any general-purpose registers.
 	// LAB 4: Your code here.
-	add $0x8, %esp			# esp point to trap-time registers
+	addl $0x8, %esp			# esp point to trap-time registers
 	popal
 
 	// Restore eflags from the stack.  After you do this, you can
