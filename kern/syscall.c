@@ -339,8 +339,10 @@ sys_ipc_try_send(envid_t envid, uint32_t value, void *srcva, unsigned perm)
         if (!p) 
 			return -E_INVAL;
 
-        if ((*pte & perm) != perm)
+		int valid_perm = (PTE_U|PTE_P);
+		if ((perm & valid_perm) != valid_perm) {
 			return -E_INVAL;
+		}
 
 		if ((perm & PTE_W) && !(*pte & PTE_W)) 
 			return -E_INVAL;
