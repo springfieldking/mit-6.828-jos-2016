@@ -74,7 +74,10 @@ duppage(envid_t envid, unsigned pn)
 	// LAB 4: Your code here.
 	// panic("duppage not implemented");
 	void *addr = (void *)(pn*PGSIZE);
-	if(uvpt[pn] & (PTE_W|PTE_COW)) {
+	if(uvpt[pn] & PTE_SHARE) {
+		if ((r = sys_page_map(0, addr, envid, addr, PTE_SYSCALL)) < 0)
+			panic("sys_page_map COW:%e", r);
+	} else if(uvpt[pn] & (PTE_W|PTE_COW)) {
 		if ((r = sys_page_map(0, addr, envid, addr, PTE_COW|PTE_U|PTE_P)) < 0)
 			panic("sys_page_map COW:%e", r);
 
@@ -131,9 +134,12 @@ fork(void)
 	// We're the parent.
 	// Eagerly copy our entire address space into the child.
 	// This is NOT what you should do in your fork implementation.
-	for (addr = (uint8_t*) UTEXT; addr < end; addr += PGSIZE)
-		duppage(envid, PGNUM(addr));
-
+	for (addr = (uint8_t*) UTEXT; addr < (uint8_t *)USTACKTOP-PGSIZE; addr += PGSIZE) {
+		if ((uvpd[PDX(addr)] & PTE_P) && (uvpt[PGNUM(addr)] & PTE_P)
+				&& (uvpt[PGNUM(addr)] & PTE_U)) {
+			duppage(envid, PGNUM(addr));
+		}
+	}
 	// Also copy the stack we are currently running on.
 	duppage(envid, PGNUM(ROUNDDOWN(&addr, PGSIZE)));
 

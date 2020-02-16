@@ -150,7 +150,6 @@ sys_env_set_trapframe(envid_t envid, struct Trapframe *tf)
 	e->env_tf.tf_ds = GD_UD | 3;
 	e->env_tf.tf_es = GD_UD | 3;
 	e->env_tf.tf_ss = GD_UD | 3;
-	e->env_tf.tf_esp = USTACKTOP;
 	e->env_tf.tf_cs = GD_UT | 3;
 	e->env_tf.tf_eflags |= FL_IF;
 	e->env_tf.tf_eflags &= ~FL_IOPL_MASK;

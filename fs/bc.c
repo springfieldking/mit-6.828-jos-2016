@@ -84,11 +84,11 @@ flush_block(void *addr)
 
 	// LAB 5: Your code here.
 	// panic("flush_block not implemented");
-	addr = ROUNDDOWN(addr, PGSIZE);
 	if(!va_is_mapped(addr) || !va_is_dirty(addr))
 		return;
 
 	int r;
+	addr = ROUNDDOWN(addr, PGSIZE);
 	if ((r = ide_write(blockno*BLKSECTS, addr, BLKSECTS)) < 0)
 		panic("in flush_block, ide_write: %e", r);
 
