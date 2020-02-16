@@ -73,6 +73,7 @@ LD	:= $(GCCPREFIX)ld
 OBJCOPY	:= $(GCCPREFIX)objcopy
 OBJDUMP	:= $(GCCPREFIX)objdump
 NM	:= $(GCCPREFIX)nm
+GDB	:= $(GCCPREFIX)gdb
 
 # Native commands
 NCC	:= gcc $(CC_VER) -pipe
@@ -166,7 +167,7 @@ QEMUOPTS += $(QEMUEXTRA)
 	sed "s/localhost:1234/localhost:$(GDBPORT)/" < $^ > $@
 
 gdb:
-	gdb -n -x .gdbinit
+	$(GDB) -n -x .gdbinit
 
 pre-qemu: .gdbinit
 #	QEMU doesn't truncate the pcap file.  Work around this.

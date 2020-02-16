@@ -106,10 +106,10 @@ spawn(const char *prog, const char **argv)
 	// Set up trap frame, including initial stack.
 	child_tf = envs[ENVX(child)].env_tf;
 	child_tf.tf_eip = elf->e_entry;
-
-	if ((r = init_stack(child, argv, &child_tf.tf_esp)) < 0)
+	uintptr_t tf_esp;
+	if ((r = init_stack(child, argv, &tf_esp)) < 0)
 		return r;
-
+	child_tf.tf_esp = tf_esp;
 	// Set up program segments as defined in ELF header.
 	ph = (struct Proghdr*) (elf_buf + elf->e_phoff);
 	for (i = 0; i < elf->e_phnum; i++, ph++) {
@@ -302,6 +302,14 @@ static int
 copy_shared_pages(envid_t child)
 {
 	// LAB 5: Your code here.
+	uintptr_t addr;
+	for (addr = 0; addr < UTOP; addr += PGSIZE) {
+		if ((uvpd[PDX(addr)] & PTE_P) && (uvpt[PGNUM(addr)] & PTE_P) &&
+				(uvpt[PGNUM(addr)] & PTE_U) && (uvpt[PGNUM(addr)] & PTE_SHARE)) {
+			// cprintf("copy shared page %d to env:%x\n", PGNUM(addr), child);
+            sys_page_map(0, (void*)addr, child, (void*)addr, (uvpt[PGNUM(addr)] & PTE_SYSCALL));
+        }
+	}
 	return 0;
 }
 
