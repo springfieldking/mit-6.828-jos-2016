@@ -428,7 +428,7 @@ sys_time_msec(void)
 }
 
 static int
-sys_pkg_send(void *data, size_t len)
+sys_pkt_send(void *data, size_t len)
 {
 	return e1000_transmit(data, len);
 }
@@ -491,8 +491,8 @@ syscall(uint32_t syscallno, uint32_t a1, uint32_t a2, uint32_t a3, uint32_t a4, 
 		case SYS_time_msec:
 			ret = sys_time_msec();
 			break;
-		case SYS_pkg_send:
-			ret = sys_pkg_send((void *)a1, a2);
+		case SYS_pkt_send:
+			ret = sys_pkt_send((void *)a1, a2);
 			break;
 		default:
 			ret = -E_INVAL;

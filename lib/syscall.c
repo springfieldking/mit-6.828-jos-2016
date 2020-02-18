@@ -124,7 +124,7 @@ sys_time_msec(void)
 }
 
 int
-sys_pkg_send(void *data, size_t len)
+sys_pkt_send(void *data, size_t len)
 {
-	return syscall(SYS_pkg_send, 0, (uint32_t)data, len, 0, 0, 0);
+	return syscall(SYS_pkt_send, 0, (uint32_t)data, len, 0, 0, 0);
 }
