@@ -2,7 +2,7 @@
 
 // LAB 6: Your driver code here
 #include <kern/pmap.h>
-
+#include <inc/string.h>
 
 volatile void *bar_va;
 #define E1000REG(offset) (void *)(bar_va + offset)
@@ -17,12 +17,16 @@ int
 e1000_attachfn(struct pci_func *f)
 {
     pci_func_enable(f);
-    void *va = mmio_map_region(f->reg_base[0], f->reg_size[0]);
+    bar_va = mmio_map_region(f->reg_base[0], f->reg_size[0]);
 
-    // uint32_t *status_reg = (uint32_t *)E1000REG(E1000_STATUS);
+    uint32_t *status_reg = (uint32_t *)E1000REG(E1000_STATUS);
     // cprintf("mmoi map pa=%08x to va=%08x, status addr=%08x, value=%08x\n", f->reg_base[0], bar_va, status_reg, *status_reg);
-    // assert(*status_reg == 0x80080783);
-    // e1000_transmit_init();
+    assert(*status_reg == 0x80080783);
+    e1000_transmit_init();
+
+    // test
+    // char *data = "transmit test";
+    // e1000_transmit(data, 13);
     return 0;
 }
 
@@ -55,9 +59,9 @@ e1000_transmit_init()
     // The Transmit Descriptor Head and Tail (TDH/TDT) registers are initialized (by hardware) to 0b
     // after a power-on or a software initiated Ethernet controller reset. Software should write 0b to both
     // these registers to ensure this.
-    struct e1000_tdh *tdh = (struct e1000_tdh *)E1000REG(E1000_TDH);
+    tdh = (struct e1000_tdh *)E1000REG(E1000_TDH);
     tdh->tdh = 0;
-    struct e1000_tdt *tdt = (struct e1000_tdt *)E1000REG(E1000_TDT);
+    tdt = (struct e1000_tdt *)E1000REG(E1000_TDT);
     tdt->tdt = 0;
 
     // Initialize the Transmit Control Register (TCTL) for desired operation to include the following:
@@ -80,4 +84,22 @@ e1000_transmit_init()
     tipg->ipgt = 10;
     tipg->ipgr1 = 4;
     tipg->ipgr2 = 6;
+}
+
+int
+e1000_transmit(void *data, size_t len)
+{
+    uint32_t current = tdt->tdt;
+    // cprintf("e1000_transmit current = %0x8\n", current);
+    if(tx_desc_array[current].status & E1000_TXD_STAT_DD) {
+        return -E_TRANSMIT_RETRY;
+    }
+
+    // cprintf("e1000_transmit set status\n");
+    tx_desc_array[current].length = len;
+    tx_desc_array[current].status &= ~E1000_TXD_STAT_DD;
+    tx_desc_array[current].cmd |= (E1000_TXD_CMD_EOP | E1000_TXD_CMD_RS);
+    memcpy(tx_buffer_array[current], data, len);
+    tdt->tdt = (current + 1) % TXDESCS;
+    return 0;
 }
