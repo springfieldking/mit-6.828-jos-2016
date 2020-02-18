@@ -6,7 +6,7 @@
 #define E1000_VENDER_ID_82540EM 0x8086
 #define E1000_DEV_ID_82540EM 0x100E
 
-#define TXDESCS 32
+#define TXDESCS 	32
 #define TX_PKT_SIZE 1518
 
 #define E1000_STATUS   0x00008  /* Device Status - RO */
@@ -20,6 +20,22 @@
 #define E1000_TXD_STAT_DD    0x00000001 /* Descriptor Done */
 #define E1000_TXD_CMD_EOP    0x00000001 /* End of Packet */
 #define E1000_TXD_CMD_RS     0x00000008 /* Report Status */
+
+#define RXDESCS 			128
+#define RX_PKT_SIZE 		1518
+#define E1000_RCTL 			0x00100
+#define E1000_RCTL_EN     	0x00000002    /* enable */
+#define E1000_RCTL_BAM    	0x00008000    /* broadcast enable */
+#define E1000_RCTL_SECRC  	0x04000000    /* Strip Ethernet CRC */
+#define E1000_RDBAL    	  	0x02800  /* RX Descriptor Base Address Low - RW */
+#define E1000_RDBAH    		0x02804  /* RX Descriptor Base Address High - RW */
+#define E1000_RDLEN    		0x02808  /* RX Descriptor Length - RW */
+#define E1000_RDH      		0x02810  /* RX Descriptor Head - RW */
+#define E1000_RDT      		0x02818  /* RX Descriptor Tail - RW */
+#define E1000_RA       		0x05400  /* Receive Address - RW Array */
+#define E1000_RAH_AV   		0x80000000        /* Receive descriptor valid */
+#define E1000_RXD_STAT_DD  	0x01    /* Descriptor Done */
+#define E1000_RXD_STAT_EOP 	0x02    /* End of Packet */
 
 enum {
     E_TRANSMIT_RETRY = 1,
@@ -78,6 +94,37 @@ struct e1000_tdh {
 	uint16_t tdh;   // Transmit Descriptor Head
 	uint16_t rsv;
 };
+
+
+// Receive Descriptor Layout
+struct e1000_rx_desc {
+	uint64_t addr;
+	uint16_t length;
+	uint16_t chksum;
+	uint8_t  status;
+	uint8_t  errors;
+	uint16_t special;
+}__attribute__((packed));
+
+// Receive Descriptor Length register (RDLEN)
+struct e1000_rdlen {
+	unsigned zero: 7; // Zero value Ignore on write. Reads back as 0b.
+	unsigned len: 13; // Receive Descriptor length Provides the number of receive descriptors (in a multiple of eight).
+	unsigned rsv: 12; // 
+};
+
+// Receive Descriptor Head register (RDH)
+struct e1000_rdh {
+	uint16_t rdh;	// Receive Descriptor Head.
+	uint16_t rsv;
+};
+
+// Receive Descriptor Tail register (RDT)
+struct e1000_rdt {
+	uint16_t rdt;	// Receive Descriptor Tail.
+	uint16_t rsv;
+};
+
 
 int e1000_attachfn(struct pci_func *pcif);
 static void e1000_transmit_init();
