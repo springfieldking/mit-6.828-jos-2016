@@ -91,7 +91,7 @@ e1000_transmit(void *data, size_t len)
 {
     uint32_t current = tdt->tdt;
     // cprintf("e1000_transmit current = %0x8\n", current);
-    if(tx_desc_array[current].status & E1000_TXD_STAT_DD) {
+    if(!(tx_desc_array[current].status & E1000_TXD_STAT_DD)) {
         return -E_TRANSMIT_RETRY;
     }
 
