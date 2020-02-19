@@ -178,7 +178,7 @@ e1000_receive_init()
       Threshold Interrupt, the Receive Delay Timer (RDTR) register should be initialized with the
       desired delay time.
     */
-    uint32_t *rctl = (uint32_t *)E1000REG(E1000_TCTL);
+    uint32_t *rctl = (uint32_t *)E1000REG(E1000_RCTL);
     *rctl = E1000_RCTL_EN | E1000_RCTL_BAM | E1000_RCTL_SECRC;
 
     // get ra address
