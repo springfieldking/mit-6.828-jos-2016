@@ -191,7 +191,7 @@ e1000_receive_init()
     // set ra address
     uint32_t *ra = (uint32_t *)E1000REG(E1000_RA);
     ra[0] = ral;
-    ra[1] = rah;
+    ra[1] = rah | E1000_RAH_AV;
 }
 
 int 
