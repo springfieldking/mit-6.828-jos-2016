@@ -193,3 +193,24 @@ e1000_receive_init()
     ra[0] = ral;
     ra[1] = rah;
 }
+
+int 
+e1000_receive(void *data, size_t len)
+{
+    static int32_t next = 0;
+    if(!(rx_desc_array[next].status & E1000_RXD_STAT_DD)) {
+        return -E_RECEIVE_RETRY;
+    }
+
+    if(rx_desc_array[next].errors) {
+        return -E_RECEIVE_RETRY;
+    }
+
+    size_t recv_len = rx_desc_array[next].length;
+    memcpy(data, rx_buffer_array[next], recv_len);
+
+    rdt->rdt = (rdt->rdt + 1) % RXDESCS;
+    next = (next + 1) % RXDESCS;
+
+    return recv_len;
+}

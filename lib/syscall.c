@@ -128,3 +128,9 @@ sys_pkt_send(void *data, size_t len)
 {
 	return syscall(SYS_pkt_send, 0, (uint32_t)data, len, 0, 0, 0);
 }
+
+int
+sys_pkt_recv(void *data, size_t len)
+{
+	return syscall(SYS_pkt_recv, 0, (uint32_t)data, len, 0, 0, 0);
+}
