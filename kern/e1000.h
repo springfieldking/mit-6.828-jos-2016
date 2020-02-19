@@ -129,5 +129,6 @@ struct e1000_rdt {
 int e1000_attachfn(struct pci_func *pcif);
 static void e1000_transmit_init();
 int e1000_transmit(void *data, size_t len);
+static void e1000_receive_init();
 
 #endif	// JOS_KERN_E1000_H
