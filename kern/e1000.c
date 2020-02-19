@@ -121,7 +121,7 @@ e1000_receive_init()
     // and both RDBAL and RDBAH are used for 64-bit addresses.
 
     int i;
-	for (i = 0; i < TXDESCS; i++) {
+	for (i = 0; i < RXDESCS; i++) {
 		rx_desc_array[i].addr = PADDR(rx_buffer_array[i]);
 	}
 
